@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marchalin Maliel - Review & Admin System</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Cute Google Fonts (Mali & Kodchasan) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@400;500;600;700&family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Mali', 'Kodchasan', -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #fff0f5;
+            color: #4a3e3e;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #webBackgroundOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        #flowerCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .cute-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .cute-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(244, 114, 182, 0.3);
+        }
+        .cute-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        /* Custom Soft Pink Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ffe4e6;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f472b6;
+            border-radius: 10px;
+        }
+
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spinSlow 8s linear infinite;
+        }
+
+        @keyframes musicWave {
+            0%, 100% { height: 4px; }
+            50% { height: 16px; }
+        }
+        .wave-bar {
+            width: 3px;
+            background-color: #f472b6;
+            border-radius: 3px;
+            animation: musicWave 1.2s ease-in-out infinite;
+        }
+        .wave-bar:nth-child(2) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.1s; }
+    </style>
+</head>
+<body class="min-h-screen pb-32 relative" onclick="enableAutoplayOnInteraction()">
+
+    <div id="webBackgroundOverlay"></div>
+    <canvas id="flowerCanvas"></canvas>
+
+    <main class="max-w-md mx-auto px-4 pt-6">
+
+        <!-- Header Profile Card -->
+        <div class="relative rounded-[2.5rem] overflow-hidden mb-5 bg-white/90 backdrop-blur-md shadow-lg border border-pink-200">
+            <!-- Banner Background Image -->
+            <div class="h-44 sm:h-48 w-full bg-pink-200 relative overflow-hidden">
+                <img id="bannerImg" src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=1200&q=80" alt="Banner" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-pink-950/30 via-transparent to-transparent"></div>
+                
+                <!-- Admin Button on Top-Right Corner of Banner -->
+                <button type="button" onclick="openAdminModal()" class="absolute top-3.5 right-3.5 text-[11px] text-pink-600 bg-white/95 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-pink-200 shadow-sm transition-all hover:scale-105 active:scale-95 font-bold z-10">
+                    Admin Panel
+                </button>
+            </div>
+
+            <!-- Profile Details -->
+            <div class="px-5 pb-5 pt-0 relative flex flex-col items-center text-center -mt-14">
+                <!-- Profile Image -->
+                <div class="relative mb-2.5">
+                    <img id="profileImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Profile" class="w-24 h-24 rounded-full border-4 border-white object-cover shadow-md">
+                </div>
+
+                <!-- Shop Title -->
+                <h1 id="shopTitle" class="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">Marchalin Maliel</h1>
+
+                <!-- Bio -->
+                <p id="shopBio" class="text-xs text-gray-600 mt-1.5 max-w-xs px-2 leading-relaxed">ขอบคุณลูกค้าทุกท่านที่ไว้วางใจ และมารีวิวความประทับใจให้เรานะคะ</p>
+
+                <!-- LINE Contact Button -->
+                <div class="mt-4 w-full">
+                    <a id="lineContactBtn" href="https://line.me" target="_blank" class="cute-btn w-full py-3 px-6 bg-emerald-100/90 hover:bg-emerald-200 text-emerald-800 font-bold rounded-2xl shadow-sm transition flex items-center justify-center text-xs sm:text-sm border border-emerald-200">
+                        ติดต่อผ่านช่องทาง LINE
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stories Highlight Section -->
+        <div class="mb-5 bg-white/90 backdrop-blur-md py-4 px-4 rounded-[2rem] border border-pink-200 shadow-md">
+            <div id="storiesContainer" class="flex gap-4 overflow-x-auto pb-1 justify-start items-center">
+                <!-- Dynamic Stories rendering via JS -->
+            </div>
+        </div>
+
+        <!-- Write Review Button -->
+        <div class="mb-5 text-center">
+            <button type="button" onclick="toggleReviewModal(true)" class="cute-btn w-full py-3.5 px-4 bg-pink-400 hover:bg-pink-500 text-white font-bold rounded-2xl shadow-md transition flex items-center justify-center text-xs sm:text-sm border border-pink-300">
+                เขียนรีวิวความประทับใจ
+            </button>
+        </div>
+
+        <!-- Reviews List Container -->
+        <div class="space-y-3.5" id="reviewsList">
+            <!-- Dynamic Reviews rendered via JS -->
+        </div>
+
+    </main>
+
+    <!-- Music Player Widget (Bottom-Right) -->
+    <div id="musicPlayerWidget" class="fixed bottom-4 right-4 z-40 bg-white/95 backdrop-blur-md p-2.5 rounded-3xl shadow-xl max-w-[200px] w-full border border-pink-200 transition-all duration-300">
+        <div class="flex items-center gap-2">
+            <!-- Vinyl Icon Animation -->
+            <div class="relative shrink-0">
+                <div id="musicDiscIcon" class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-400 to-rose-300 flex items-center justify-center text-white shadow-sm animate-spin-slow border-2 border-white">
+                    <div class="w-2.5 h-2.5 rounded-full bg-white"></div>
+                </div>
+            </div>
+
+            <!-- Song Info & Equalizer Wave -->
+            <div class="flex-1 truncate">
+                <div id="songTitleDisplay" class="text-[11px] font-bold text-gray-800 truncate">Killswitch Lullaby</div>
+                <div class="flex items-center gap-1 mt-0.5">
+                    <div class="flex items-center gap-0.5 h-3">
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                    </div>
+                    <span class="text-[9px] text-pink-500 font-semibold ml-1">กำลังเล่น</span>
+                </div>
+            </div>
+
+            <!-- Toggle Mute Button -->
+            <button type="button" id="muteToggleBtn" onclick="toggleAudioMute()" class="w-6 h-6 rounded-full bg-pink-100 hover:bg-pink-200 flex items-center justify-center text-[10px] text-pink-600 font-bold shrink-0 transition">
+                ON
+            </button>
+        </div>
+
+        <!-- Hidden Iframe for YouTube Sound -->
+        <div class="hidden">
+            <iframe id="youtubeIframe" class="w-0 h-0" 
+                src="https://www.youtube.com/embed/0A6908o2SCo?enablejsapi=1&autoplay=1&mute=0" 
+                allow="autoplay; encrypted-media">
+            </iframe>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div id="reviewModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-6 max-w-sm w-full shadow-2xl relative border border-pink-200">
+            <button type="button" onclick="toggleReviewModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center font-bold text-xs">
+                ✕
+            </button>
+            
+            <h3 class="text-base font-bold text-pink-600 mb-1 text-center">เขียนรีวิวความประทับใจ</h3>
+            <p class="text-[11px] text-gray-500 text-center mb-4">ขอบพระคุณลูกค้าที่มารีวิวให้เรานะคะ</p>
+
+            <form id="reviewForm" onsubmit="submitReview(event)" class="space-y-3.5">
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1 text-center">ให้คะแนนความพึงพอใจ</label>
+                    <div class="flex gap-2.5 text-2xl text-yellow-400 cursor-pointer justify-center py-1" id="starInputGroup">
+                        <span class="star-btn hover:scale-110 transition" data-value="1" onclick="setRating(1)">★</span>
+                        <span class="star-btn hover:scale-110 transition" data-value="2" onclick="setRating(2)">★</span>
+                        <span class="star-btn hover:scale-110 transition" data-value="3" onclick="setRating(3)">★</span>
+                        <span class="star-btn hover:scale-110 transition" data-value="4" onclick="setRating(4)">★</span>
+                        <span class="star-btn hover:scale-110 transition" data-value="5" onclick="setRating(5)">★</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">ชื่อลูกค้า หรือนามแฝง</label>
+                    <input type="text" id="reviewerName" required placeholder="เช่น คุณลูกค้า" class="w-full px-3.5 py-2 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 text-xs bg-pink-50/30">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">ความเห็นเกี่ยวกับสินค้าหรือบริการ</label>
+                    <textarea id="reviewerComment" rows="3" required placeholder="แชร์ความประทับใจของคุณ..." class="w-full px-3.5 py-2 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 text-xs bg-pink-50/30"></textarea>
+                </div>
+
+                <button type="submit" class="cute-btn w-full py-2.5 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl shadow-md transition text-xs">
+                    ส่งรีวิว
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Story Viewer Modal -->
+    <div id="storyViewerModal" class="fixed inset-0 z-50 bg-pink-950/40 backdrop-blur-md hidden flex items-center justify-center p-3">
+        <div class="relative w-full max-w-xs h-[75vh] max-h-[600px] bg-white/95 backdrop-blur-xl rounded-[2.5rem] border border-pink-200 overflow-hidden flex flex-col justify-between p-3.5 shadow-2xl transition-all">
+            
+            <!-- Progress Bar List -->
+            <div class="z-20 w-full flex gap-1 mb-2.5" id="storyProgressBarContainer"></div>
+
+            <!-- Top Header -->
+            <div class="flex items-center justify-between text-gray-800 z-20 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-pink-100 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <img id="storyHeaderProfile" src="" class="w-7 h-7 rounded-full object-cover border border-pink-300">
+                    <div>
+                        <span id="storyHeaderTitle" class="text-[11px] font-bold text-gray-800 block leading-tight">Story</span>
+                        <span id="storyCounterText" class="text-[9px] text-pink-500 font-semibold block">1 / 1</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closeStoryModal()" class="w-6 h-6 rounded-full bg-pink-100 hover:bg-pink-200 text-pink-600 font-bold flex items-center justify-center text-[11px] transition">✕</button>
+            </div>
+
+            <!-- Main Image View -->
+            <div class="absolute inset-0 w-full h-full p-2.5 pt-14 pb-12 flex items-center justify-center">
+                <img id="storyViewerImg" src="" class="w-full h-full object-cover rounded-[1.8rem] border border-pink-100/60 shadow-inner">
+            </div>
+
+            <!-- Click Touch Overlay Areas -->
+            <div class="absolute inset-0 z-10 flex pt-14 pb-12">
+                <div class="w-1/2 h-full cursor-pointer" onclick="prevStorySlide()"></div>
+                <div class="w-1/2 h-full cursor-pointer" onclick="nextStorySlide()"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] p-5 max-w-sm w-full shadow-2xl relative max-h-[90vh] overflow-y-auto border border-pink-200">
+            <button type="button" onclick="closeAdminModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 w-7 h-7 rounded-full bg-pink-50 flex items-center justify-center font-bold text-xs">
+                ✕
+            </button>
+
+            <!-- Admin Header -->
+            <div class="text-center mb-4 pb-3 border-b border-pink-100">
+                <h2 class="text-sm font-bold text-gray-800">ระบบจัดการหลังบ้าน</h2>
+                <p class="text-[10px] text-pink-500 font-medium">จัดการข้อมูล รูปภาพ และระบบภายในเว็บไซต์</p>
+            </div>
+
+            <!-- Admin Authentication (Password: 120950) -->
+            <div id="adminAuthSection" class="space-y-3 py-6 text-center">
+                <p class="text-xs text-gray-600 font-medium">กรอกรหัสผ่านเพื่อเข้าสู่ระบบหลังบ้าน</p>
+                <input type="password" id="adminPassInput" placeholder="กรอกรหัสผ่าน" class="w-full text-center px-4 py-2.5 rounded-xl border border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 text-xs bg-pink-50/20">
+                <button type="button" onclick="verifyAdminPass()" class="cute-btn w-full py-2.5 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition text-xs">
+                    เข้าสู่ระบบ
+                </button>
+            </div>
+
+            <!-- Admin Panel Content (4 Clear Categories) -->
+            <div id="adminPanelContent" class="hidden space-y-3.5">
+                
+                <!-- Category 1: Profile & Backgrounds -->
+                <div class="bg-pink-50/50 rounded-2xl p-3.5 border border-pink-100 shadow-sm space-y-2.5">
+                    <div class="flex items-center gap-2 pb-2 border-b border-pink-100">
+                        <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                        <h3 class="text-[11px] font-bold text-gray-800 tracking-wide uppercase">1. จัดการรูปภาพเว็บไซต์</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2 pt-0.5">
+                        <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-pink-100/60">
+                            <span class="text-[11px] font-medium text-gray-700">รูปโปรไฟล์ร้าน</span>
+                            <input type="file" id="adminProfileFile" accept="image/*" onchange="handleSingleFileUpload(event, 'profileImg')" class="hidden">
+                            <label for="adminProfileFile" class="cute-btn px-3 py-1 bg-pink-500 hover:bg-pink-600 text-white font-bold text-[10px] rounded-lg cursor-pointer shadow-sm">
+                                เลือกรูป
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-pink-100/60">
+                            <span class="text-[11px] font-medium text-gray-700">รูปปก Banner</span>
+                            <input type="file" id="adminBannerFile" accept="image/*" onchange="handleSingleFileUpload(event, 'bannerImg')" class="hidden">
+                            <label for="adminBannerFile" class="cute-btn px-3 py-1 bg-pink-500 hover:bg-pink-600 text-white font-bold text-[10px] rounded-lg cursor-pointer shadow-sm">
+                                เลือกรูป
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-pink-100/60">
+                            <span class="text-[11px] font-medium text-gray-700">รูปพื้นหลังเว็บ</span>
+                            <input type="file" id="adminWebBgFile" accept="image/*" onchange="handleSingleFileUpload(event, 'webBgImg')" class="hidden">
+                            <label for="adminWebBgFile" class="cute-btn px-3 py-1 bg-pink-500 hover:bg-pink-600 text-white font-bold text-[10px] rounded-lg cursor-pointer shadow-sm">
+                                เลือกรูป
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 2: Contact, Bio & Songs -->
+                <div class="bg-pink-50/50 rounded-2xl p-3.5 border border-pink-100 shadow-sm space-y-2.5">
+                    <div class="flex items-center gap-2 pb-2 border-b border-pink-100">
+                        <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                        <h3 class="text-[11px] font-bold text-gray-800 tracking-wide uppercase">2. ข้อมูลร้านและเพลง</h3>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-600 mb-1">คำอธิบายโปรไฟล์ (Bio)</label>
+                            <textarea id="adminBioInput" rows="2" placeholder="ระบุข้อความคำอธิบายร้านค้า..." class="w-full px-3 py-1.5 text-xs rounded-xl border border-pink-200 bg-white focus:ring-2 focus:ring-pink-300 focus:outline-none"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-600 mb-1">ลิงก์ติดต่อ LINE</label>
+                            <input type="url" id="adminLineInput" placeholder="https://line.me/ti/p/..." class="w-full px-3 py-1.5 text-xs rounded-xl border border-pink-200 bg-white focus:ring-2 focus:ring-pink-300 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-600 mb-1">ชื่อเพลงในเว็บ</label>
+                            <input type="text" id="adminSongTitleInput" placeholder="ระบุชื่อเพลง" class="w-full px-3 py-1.5 text-xs rounded-xl border border-pink-200 bg-white focus:ring-2 focus:ring-pink-300 focus:outline-none mb-1.5">
+                            
+                            <label class="block text-[10px] font-semibold text-gray-600 mb-1">ลิงก์เพลงจาก YouTube</label>
+                            <input type="text" id="adminSongUrlInput" placeholder="https://youtu.be/..." class="w-full px-3 py-1.5 text-xs rounded-xl border border-pink-200 bg-white focus:ring-2 focus:ring-pink-300 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 3: Highlight Stories with Title Input -->
+                <div class="bg-pink-50/50 rounded-2xl p-3.5 border border-pink-100 shadow-sm space-y-2.5">
+                    <div class="flex items-center gap-2 pb-2 border-b border-pink-100">
+                        <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                        <h3 class="text-[11px] font-bold text-gray-800 tracking-wide uppercase">3. จัดการไฮไลท์สตอรี่</h3>
+                    </div>
+
+                    <div class="space-y-2">
+                        <select id="adminStoryGroupSelect" class="w-full px-3 py-1.5 text-xs rounded-xl border border-pink-200 bg-white focus:ring-2 focus:ring-pink-300 focus:outline-none">
+                            <option value="NEW">สร้างไฮไลท์ใหม่</option>
+                        </select>
+
+                        <div id="newStoryTitleGroup">
+                            <label class="block text-[10px] font-semibold text-gray-600 mb-1">ชื่อไฮไลท์สตอรี่</label>
+                            <input type="text" id="easyStoryTitle" placeholder="เช่น รีวิวสินค้า, โปรโมชั่น" class="w-full px-3 py-1.5 text-xs rounded-xl border border-pink-200 bg-white focus:ring-2 focus:ring-pink-300 focus:outline-none">
+                        </div>
+                        
+                        <input type="file" id="easyStoryFile" accept="image/*" onchange="handleStoryUpload(event)" class="hidden">
+                        <label for="easyStoryFile" class="cute-btn w-full py-2 bg-pink-400 hover:bg-pink-500 text-white font-bold text-xs rounded-xl cursor-pointer flex items-center justify-center shadow-sm">
+                            เลือกรูปภาพเพิ่มลงไฮไลท์
+                        </label>
+                    </div>
+
+                    <div class="pt-2 border-t border-pink-100">
+                        <span class="text-[10px] font-semibold text-gray-600 block mb-1.5">รายการไฮไลท์ปัจจุบัน:</span>
+                        <div id="adminStoryList" class="space-y-2 max-h-32 overflow-y-auto pr-1">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 4: Review Moderation -->
+                <div class="bg-pink-50/50 rounded-2xl p-3.5 border border-pink-100 shadow-sm space-y-2.5">
+                    <div class="flex items-center gap-2 pb-2 border-b border-pink-100">
+                        <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                        <h3 class="text-[11px] font-bold text-gray-800 tracking-wide uppercase">4. จัดการรีวิวจากลูกค้า</h3>
+                    </div>
+
+                    <div id="easyAdminReviewsList" class="space-y-2 max-h-32 overflow-y-auto pr-1">
+                        <!-- Dynamic Reviews Moderation Items -->
+                    </div>
+                </div>
+
+                <!-- Global Save Button -->
+                <button type="button" onclick="saveAdminSettings()" class="cute-btn w-full py-2.5 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl shadow-md transition text-xs tracking-wider uppercase">
+                    บันทึกการตั้งค่าทั้งหมด
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultData = {
+            shopTitle: "Marchalin Maliel",
+            shopBio: "ขอบคุณลูกค้าทุกท่านที่ไว้วางใจ และมารีวิวความประทับใจให้เรานะคะ",
+            profileImg: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            bannerImg: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=1200&q=80",
+            webBgImg: "",
+            lineUrl: "https://line.me",
+            songTitle: "Killswitch Lullaby",
+            youtubeUrl: "https://youtu.be/0A6908o2SCo",
+            stories: [
+                { 
+                    id: 1, 
+                    title: "รีวิวสินค้า", 
+                    items: [
+                        "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80",
+                        "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=80"
+                    ] 
+                },
+                { 
+                    id: 2, 
+                    title: "ผลงานร้าน", 
+                    items: [
+                        "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=600&q=80"
+                    ] 
+                }
+            ],
+            reviews: [
+                { id: 101, name: "คุณส้ม", rating: 5, comment: "ประทับใจบริการมากค่ะ สินค้าตรงปกส่งไวม้ากกก", date: "เมื่อวานนี้" },
+                { id: 102, name: "คุณแพรว", rating: 5, comment: "น่ารักมากค่ะ อุดหนุนรอบที่สองแล้ว บริการดีเยี่ยม", date: "3 วันที่แล้ว" }
+            ]
+        };
+
+        let appData = JSON.parse(localStorage.getItem('mm_app_data')) || defaultData;
+        
+        let selectedRating = 5;
+        let isMuted = false;
+        let hasInteracted = false;
+
+        let currentStoryGroup = null;
+        let currentStoryIndex = 0;
+
+        function saveData() {
+            try {
+                localStorage.setItem('mm_app_data', JSON.stringify(appData));
+                renderApp();
+            } catch (err) {
+                console.error("Storage error:", err);
+            }
+        }
+
+        function enableAutoplayOnInteraction() {
+            if (!hasInteracted) {
+                hasInteracted = true;
+                const iframe = document.getElementById('youtubeIframe');
+                if (iframe) {
+                    let src = iframe.src;
+                    if (!src.includes('autoplay=1')) {
+                        iframe.src = src + "&autoplay=1";
+                    }
+                }
+            }
+        }
+
+        function toggleAudioMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('muteToggleBtn');
+            const iframe = document.getElementById('youtubeIframe');
+            btn.innerText = isMuted ? 'OFF' : 'ON';
+
+            if (iframe) {
+                let currentSrc = iframe.src;
+                if (isMuted) {
+                    iframe.src = currentSrc.replace('mute=0', 'mute=1');
+                } else {
+                    iframe.src = currentSrc.replace('mute=1', 'mute=0');
+                }
+            }
+        }
+
+        function handleSingleFileUpload(event, dataKey) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    appData[dataKey] = e.target.result;
+                    saveData();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleStoryUpload(event) {
+            const file = event.target.files[0];
+            const selectEl = document.getElementById('adminStoryGroupSelect');
+            const selectedVal = selectEl.value;
+            const titleInput = document.getElementById('easyStoryTitle');
+            const title = titleInput.value.trim() || "ไฮไลท์สตอรี่";
+
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+
+                if (selectedVal === "NEW") {
+                    const newHighlight = {
+                        id: Date.now(),
+                        title: title,
+                        items: [imageUrl]
+                    };
+                    appData.stories.push(newHighlight);
+                } else {
+                    const targetGroup = appData.stories.find(s => s.id == selectedVal);
+                    if (targetGroup) {
+                        if (targetGroup.items.length >= 50) {
+                            return;
+                        }
+                        targetGroup.items.push(imageUrl);
+                    }
+                }
+
+                saveData();
+                populateAdminStorySelect();
+                renderAdminStoryList();
+                titleInput.value = "";
+                document.getElementById('easyStoryFile').value = "";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function deleteStoryHighlightGroup(id) {
+            appData.stories = appData.stories.filter(s => s.id != id);
+            saveData();
+            populateAdminStorySelect();
+            renderAdminStoryList();
+        }
+
+        function deleteSingleStoryItem(groupIdx, itemIdx) {
+            appData.stories[groupIdx].items.splice(itemIdx, 1);
+            if (appData.stories[groupIdx].items.length === 0) {
+                appData.stories.splice(groupIdx, 1);
+            }
+            saveData();
+            populateAdminStorySelect();
+            renderAdminStoryList();
+        }
+
+        function populateAdminStorySelect() {
+            const selectEl = document.getElementById('adminStoryGroupSelect');
+            if (!selectEl) return;
+            selectEl.innerHTML = `<option value="NEW">สร้างไฮไลท์ใหม่</option>` + 
+                appData.stories.map(s => `<option value="${s.id}">${escapeHtml(s.title)} (${s.items.length}/50 รูป)</option>`).join('');
+            
+            selectEl.onchange = function() {
+                const titleGroup = document.getElementById('newStoryTitleGroup');
+                if (this.value === "NEW") {
+                    titleGroup.classList.remove('hidden');
+                } else {
+                    titleGroup.classList.add('hidden');
+                }
+            };
+        }
+
+        function renderAdminStoryList() {
+            const listContainer = document.getElementById('adminStoryList');
+            if (!listContainer) return;
+
+            if (appData.stories.length === 0) {
+                listContainer.innerHTML = `<div class="text-[11px] text-gray-400 text-center py-2">ไม่มีไฮไลท์ในระบบ</div>`;
+                return;
+            }
+
+            listContainer.innerHTML = appData.stories.map((s, gIdx) => `
+                <div class="bg-white p-2 rounded-xl border border-pink-100 text-xs space-y-1.5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-gray-800">${escapeHtml(s.title)} <span class="text-[10px] text-pink-500">(${s.items.length} รูป)</span></span>
+                        <button type="button" onclick="deleteStoryHighlightGroup(${s.id})" class="text-red-500 hover:text-red-700 bg-pink-50 px-2 py-0.5 rounded-lg border border-red-100 text-[10px] font-bold">
+                            ลบ
+                        </button>
+                    </div>
+                    <div class="flex gap-1.5 overflow-x-auto pb-1">
+                        ${s.items.map((imgUrl, iIdx) => `
+                            <div class="relative shrink-0 w-9 h-9 rounded-lg overflow-hidden border border-pink-200 group">
+                                <img src="${imgUrl}" class="w-full h-full object-cover">
+                                <button type="button" onclick="deleteSingleStoryItem(${gIdx}, ${iIdx})" class="absolute inset-0 bg-black/60 text-white flex items-center justify-center text-[9px] font-bold opacity-0 group-hover:opacity-100 transition">
+                                    ✕
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderApp() {
+            document.getElementById('shopTitle').innerText = appData.shopTitle || "Marchalin Maliel";
+            document.getElementById('shopBio').innerText = appData.shopBio;
+            document.getElementById('profileImg').src = appData.profileImg;
+            document.getElementById('bannerImg').src = appData.bannerImg;
+            document.getElementById('lineContactBtn').href = appData.lineUrl || "https://line.me";
+
+            const webBg = document.getElementById('webBackgroundOverlay');
+            if (appData.webBgImg) {
+                webBg.style.backgroundImage = `url('${appData.webBgImg}')`;
+            } else {
+                webBg.style.backgroundImage = 'none';
+            }
+
+            document.getElementById('songTitleDisplay').innerText = appData.songTitle || "Killswitch Lullaby";
+            let ytUrl = appData.youtubeUrl || "https://youtu.be/0A6908o2SCo";
+            let videoId = "";
+            if (ytUrl.includes('watch?v=')) {
+                videoId = ytUrl.split('watch?v=')[1].split('&')[0];
+            } else if (ytUrl.includes('youtu.be/')) {
+                videoId = ytUrl.split('youtu.be/')[1].split('?')[0];
+            } else if (ytUrl.includes('shorts/')) {
+                videoId = ytUrl.split('shorts/')[1].split('?')[0];
+            }
+
+            let embedUrl = videoId ? 
+                `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=0&loop=1&playlist=${videoId}` :
+                `https://www.youtube.com/embed/0A6908o2SCo?enablejsapi=1&autoplay=1&mute=0&loop=1&playlist=0A6908o2SCo`;
+            
+            document.getElementById('youtubeIframe').src = embedUrl;
+
+            const storiesContainer = document.getElementById('storiesContainer');
+            if (appData.stories.length === 0) {
+                storiesContainer.innerHTML = `<div class="text-xs text-gray-400 py-1 w-full text-center">ยังไม่มีสตอรี่ไฮไลท์</div>`;
+            } else {
+                storiesContainer.innerHTML = appData.stories.map((s, idx) => {
+                    const coverImg = (s.items && s.items.length > 0) ? s.items[0] : appData.profileImg;
+                    return `
+                        <div onclick="openStoryHighlight(${idx})" class="flex flex-col items-center justify-center cursor-pointer shrink-0 group">
+                            <div class="w-[60px] h-[60px] rounded-full p-0.5 bg-gradient-to-tr from-pink-400 via-rose-300 to-pink-200 shadow-sm group-hover:scale-105 transition mb-1.5">
+                                <img src="${coverImg}" class="w-full h-full rounded-full object-cover border-2 border-white">
+                            </div>
+                            <span class="text-[10px] text-gray-700 font-semibold max-w-[68px] truncate text-center">${escapeHtml(s.title || '')}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const reviewsList = document.getElementById('reviewsList');
+            if (appData.reviews.length === 0) {
+                reviewsList.innerHTML = `<div class="text-center py-6 text-xs text-gray-400">ยังไม่มีรีวิวในระบบ</div>`;
+            } else {
+                reviewsList.innerHTML = appData.reviews.map(r => `
+                    <div class="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-4 shadow-sm border border-pink-200 transition hover:shadow-md">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-bold text-xs text-gray-800">${escapeHtml(r.name)}</span>
+                            <span class="text-[10px] text-gray-400">${r.date || 'เมื่อสักครู่'}</span>
+                        </div>
+                        <div class="text-yellow-400 text-xs mb-1.5">
+                            ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+                        </div>
+                        <p class="text-xs text-gray-600 leading-relaxed break-words">${escapeHtml(r.comment)}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function openStoryHighlight(groupIndex) {
+            currentStoryGroup = appData.stories[groupIndex];
+            if (!currentStoryGroup || !currentStoryGroup.items || currentStoryGroup.items.length === 0) return;
+            
+            currentStoryIndex = 0;
+            updateStoryViewerUI();
+            document.getElementById('storyViewerModal').classList.remove('hidden');
+        }
+
+        function updateStoryViewerUI() {
+            if (!currentStoryGroup) return;
+
+            const total = currentStoryGroup.items.length;
+            const currentImg = currentStoryGroup.items[currentStoryIndex];
+
+            document.getElementById('storyViewerImg').src = currentImg;
+            document.getElementById('storyHeaderTitle').innerText = currentStoryGroup.title || "Story";
+            document.getElementById('storyHeaderProfile').src = appData.profileImg;
+            document.getElementById('storyCounterText').innerText = `${currentStoryIndex + 1} / ${total}`;
+
+            const progressBarContainer = document.getElementById('storyProgressBarContainer');
+            progressBarContainer.innerHTML = currentStoryGroup.items.map((_, idx) => {
+                let bgClass = "bg-pink-100";
+                if (idx < currentStoryIndex) bgClass = "bg-pink-300";
+                else if (idx === currentStoryIndex) bgClass = "bg-pink-500 shadow-sm";
+
+                return `<div class="h-1.5 flex-1 rounded-full ${bgClass} transition-all duration-300"></div>`;
+            }).join('');
+        }
+
+        function nextStorySlide() {
+            if (!currentStoryGroup) return;
+            if (currentStoryIndex < currentStoryGroup.items.length - 1) {
+                currentStoryIndex++;
+                updateStoryViewerUI();
+            } else {
+                closeStoryModal();
+            }
+        }
+
+        function prevStorySlide() {
+            if (!currentStoryGroup) return;
+            if (currentStoryIndex > 0) {
+                currentStoryIndex--;
+                updateStoryViewerUI();
+            }
+        }
+
+        function closeStoryModal() {
+            document.getElementById('storyViewerModal').classList.add('hidden');
+            currentStoryGroup = null;
+            currentStoryIndex = 0;
+        }
+
+        function renderEasyAdminReviewsList() {
+            const listContainer = document.getElementById('easyAdminReviewsList');
+            if (!appData.reviews || appData.reviews.length === 0) {
+                listContainer.innerHTML = `<div class="text-[11px] text-gray-400 text-center py-2">ไม่มีรีวิวในระบบ</div>`;
+                return;
+            }
+
+            listContainer.innerHTML = appData.reviews.map(r => `
+                <div class="flex items-center justify-between p-2 bg-white rounded-xl border border-pink-100 text-xs shadow-sm">
+                    <div class="truncate max-w-[180px]">
+                        <span class="font-bold text-gray-800">${escapeHtml(r.name)}</span>
+                        <p class="text-[10px] text-gray-500 truncate">${escapeHtml(r.comment)}</p>
+                    </div>
+                    <button type="button" onclick="deleteReview(${r.id})" class="text-red-500 hover:text-red-700 bg-pink-50 px-2 py-0.5 rounded-lg border border-red-100 text-[10px] font-bold shrink-0">
+                        ลบ
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function deleteReview(id) {
+            appData.reviews = appData.reviews.filter(r => r.id !== id);
+            saveData();
+            renderEasyAdminReviewsList();
+        }
+
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function verifyAdminPass() {
+            const pass = document.getElementById('adminPassInput').value;
+            if (pass === "120950") {
+                document.getElementById('adminAuthSection').classList.add('hidden');
+                document.getElementById('adminPanelContent').classList.remove('hidden');
+                populateAdminFields();
+            } else {
+                alert("รหัสผ่านไม่ถูกต้อง");
+            }
+        }
+
+        function populateAdminFields() {
+            document.getElementById('adminBioInput').value = appData.shopBio || "";
+            document.getElementById('adminLineInput').value = appData.lineUrl || "";
+            document.getElementById('adminSongTitleInput').value = appData.songTitle || "";
+            document.getElementById('adminSongUrlInput').value = appData.youtubeUrl || "";
+            populateAdminStorySelect();
+            renderAdminStoryList();
+            renderEasyAdminReviewsList();
+        }
+
+        function saveAdminSettings() {
+            appData.shopBio = document.getElementById('adminBioInput').value.trim();
+            appData.lineUrl = document.getElementById('adminLineInput').value.trim();
+            appData.songTitle = document.getElementById('adminSongTitleInput').value.trim();
+            appData.youtubeUrl = document.getElementById('adminSongUrlInput').value.trim();
+
+            saveData();
+            closeAdminModal();
+        }
+
+        function setRating(val) {
+            selectedRating = val;
+            const stars = document.querySelectorAll('.star-btn');
+            stars.forEach((s, idx) => {
+                s.style.opacity = (idx < val) ? '1' : '0.3';
+            });
+        }
+
+        function submitReview(e) {
+            e.preventDefault();
+            const name = document.getElementById('reviewerName').value.trim();
+            const comment = document.getElementById('reviewerComment').value.trim();
+
+            if (!name || !comment) return;
+
+            appData.reviews.unshift({
+                id: Date.now(),
+                name,
+                rating: selectedRating,
+                comment,
+                date: "เมื่อสักครู่"
+            });
+
+            saveData();
+            toggleReviewModal(false);
+            document.getElementById('reviewForm').reset();
+            setRating(5);
+        }
+
+        function toggleReviewModal(show) {
+            document.getElementById('reviewModal').classList.toggle('hidden', !show);
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function initFlowerCanvas() {
+            const canvas = document.getElementById('flowerCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const flowers = [];
+            const numFlowers = 24;
+
+            for (let i = 0; i < numFlowers; i++) {
+                flowers.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height - (Math.random() * 80 + 20),
+                    size: Math.random() * 9 + 12,
+                    petalColor: i % 2 === 0 ? '#f472b6' : '#fb7185',
+                    centerColor: '#fef08a'
+                });
+            }
+
+            let time = 0;
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                time += 0.035;
+
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height);
+                ctx.quadraticCurveTo(canvas.width / 2, canvas.height - 65, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(252, 231, 243, 0.65)';
+                ctx.fill();
+
+                flowers.forEach((flower, index) => {
+                    const sway = Math.sin(time + index) * 8;
+                    const fx = flower.x + sway;
+                    const fy = flower.y;
+
+                    ctx.beginPath();
+                    ctx.moveTo(flower.x, canvas.height);
+                    ctx.quadraticCurveTo(flower.x, fy + 20, fx, fy);
+                    ctx.strokeStyle = 'rgba(134, 239, 172, 0.8)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    ctx.fillStyle = flower.petalColor;
+                    for (let p = 0; p < 5; p++) {
+                        const petalAngle = (p * Math.PI * 2) / 5 + time * 0.2;
+                        const px = fx + Math.cos(petalAngle) * flower.size;
+                        const py = fy + Math.sin(petalAngle) * flower.size;
+                        ctx.beginPath();
+                        ctx.arc(px, py, flower.size * 0.55, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(fx, fy, flower.size * 0.45, 0, Math.PI * 2);
+                    ctx.fillStyle = flower.centerColor;
+                    ctx.fill();
+                });
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        window.onload = function() {
+            initFlowerCanvas();
+            renderApp();
+            setRating(5);
+        };
+    </script>
+</body>
+</html>
